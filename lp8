@@ -1,0 +1,75 @@
+# 8. Construct a small Transformer model by stacking multiple layers of self-attention and feedback. Train the model in a simple sequence-to-sequence
+# task (e.g., reversing a sequence.)
+
+import torch
+import torch.nn as nn
+import random
+
+# Parameters
+VOCAB_SIZE = 20
+SEQ_LENGTH = 8
+NUM_SAMPLES = 500
+BATCH_SIZE = 16
+EMBED_DIM = 32
+NUM_HEADS = 2
+NUM_LAYERS = 1
+FFN_DIM = 64
+EPOCHS = 10
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Generate synthetic data
+def generate_data(num_samples):
+    data = []
+    for _ in range(num_samples):
+        seq = [random.randint(1, VOCAB_SIZE - 1) for _ in range(SEQ_LENGTH)]
+        data.append((seq, list(reversed(seq))))
+    return data
+
+# Batch generator
+def get_batches(data, batch_size):
+    random.shuffle(data)
+    for i in range(0, len(data), batch_size):
+        batch = data[i:i+batch_size]
+        src = torch.tensor([x[0] for x in batch], dtype=torch.long).to(DEVICE)
+        tgt = torch.tensor([x[1] for x in batch], dtype=torch.long).to(DEVICE)
+        yield src, tgt
+
+# Simple Transformer model
+class SimpleTransformer(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.embedding = nn.Embedding(VOCAB_SIZE, EMBED_DIM)
+        self.pos_embedding = nn.Parameter(torch.randn(1, SEQ_LENGTH, EMBED_DIM))
+        encoder_layer = nn.TransformerEncoderLayer(d_model=EMBED_DIM, nhead=NUM_HEADS, dim_feedforward=FFN_DIM)
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=NUM_LAYERS)
+        self.fc = nn.Linear(EMBED_DIM, VOCAB_SIZE)
+
+    def forward(self, x):
+        x = self.embedding(x) + self.pos_embedding
+        x = x.permute(1, 0, 2)
+        x = self.transformer(x)
+        x = x.permute(1, 0, 2)
+        return self.fc(x)
+
+# Train function
+def train_model():
+    data = generate_data(NUM_SAMPLES)
+    model = SimpleTransformer().to(DEVICE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.005)
+    loss_fn = nn.CrossEntropyLoss()
+
+    model.train()
+    for epoch in range(EPOCHS):
+        total_loss = 0
+        for src, tgt in get_batches(data, BATCH_SIZE):
+            optimizer.zero_grad()
+            output = model(src)
+            loss = loss_fn(output.reshape(-1, VOCAB_SIZE), tgt.reshape(-1))
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        print(f"Epoch {epoch+1}, Loss: {total_loss:.4f}")
+    return model
+
+if __name__ == "__main__":
+    train_model()
