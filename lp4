@@ -1,0 +1,23 @@
+# 4. Artistic Creations with StyleGAN: Use StyleGAN for artistic projects, generating visually striking images with control over specific visual
+# attributes.
+
+
+# Go to Runtime > Change runtime type > Set "Hardware accelerator" to GPU
+
+!pip install stylegan2-pytorch
+
+!git clone https://github.com/NVlabs/stylegan2-ada-pytorch.git
+%cd stylegan2-ada-pytorch
+
+!pip install click requests tqdm pyspng ninja imageio-ffmpeg
+
+!mkdir pretrained
+
+!wget -O pretrained/ffhq.pkl https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl
+
+!python generate.py --outdir=out --trunc=1 --seeds=6,7,9 --network=pretrained/ffhq.pkl
+
+from IPython.display import Image, display
+display(Image('out/seed0006.png'))
+display(Image('out/seed0007.png'))
+display(Image('out/seed0009.png'))
