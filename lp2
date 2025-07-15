@@ -1,0 +1,20 @@
+# 2. Image Synthesis using Stable Diffuser Model: Dive into image generation, creating unique and imaginative visuals based on textual descriptions.
+
+from diffusers import StableDiffusionPipeline
+import torch
+from PIL import Image
+
+def generate_image(prompt, model_id="CompVis/stable-diffusion-v1-4"):
+    pipe = StableDiffusionPipeline.from_pretrained(model_id)
+    pipe.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+    image = pipe(prompt, guidance_scale=7.5).images[0]
+    image.show()
+    return image
+
+def run_image_generation():
+    prompt_text = input("Enter a description for the image: ")
+    image = generate_image(prompt_text)
+    image.save('generated image.png')
+    print("Image saved as 'generated image.png'")
+
+run_image_generation()
