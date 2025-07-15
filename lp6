@@ -1,0 +1,33 @@
+# 6. Language Translation with Marian MT: Implement language translation using Marian MT, a multilingual transformer model, for translating text between different languages.
+
+# pip install transformers
+
+from transformers import  MarianTokenizer,MarianMTModel
+
+def translate_text(text, model_name):
+  tokenizer=MarianTokenizer.from_pretrained(model_name)
+  model=MarianMTModel.from_pretrained(model_name)
+
+  inputs=tokenizer(text,return_tensors="pt",padding=True)
+
+  translated=model.generate(**inputs)
+  return tokenizer.decode(translated[0],skip_special_tokens=True)
+
+options={
+      "1":{"label":"English -> Hindi","model":"Helsinki-NLP/opus-mt-en-hi"},
+      "2":{"label":"English -> Malayalam","model":"Helsinki-NLP/opus-mt-en-ml"},
+      "3":{"label":"English -> Marathi","model":"Helsinki-NLP/opus-mt-en-hr"}
+  }
+print("Multilingual Translator using MarianMT")
+for key,val in options.items():
+  print(f"{key}. {val['label']}")
+
+choice=input("Select an option(1-3):")
+
+if choice in options:
+  text=input(f"\nEnter text to  translate ({options[choice]['label']}):")
+  model_name=options[choice]['model']
+  translated_text=translate_text(text,model_name)
+  print(f"\n Translted output: {translated_text}")
+else:
+  print("Invalid option selected.")
