@@ -1,0 +1,33 @@
+# 5. Story Writing with: Engage in creative writing by utilizing Google Gemini API for generating dialogues, narratives, and even collaborative storytelling.
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
+
+# Load GPT-2 tokenizer and model
+model_name = "gpt2"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
+
+# Get user input for story prompt
+prompt = input("Enter your story prompt: ")
+
+# Tokenize input
+inputs = tokenizer(prompt, return_tensors="pt")
+input_ids = inputs["input_ids"]
+
+# Generate story
+with torch.no_grad():
+    generated_ids = model.generate(
+        input_ids,
+        max_length=200,
+        temperature=0.9,
+        do_sample=True,
+        top_k=50,
+        top_p=0.95,
+        num_return_sequences=1
+    )
+
+# Decode and print story
+story = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+print("\nGenerated Story:\n")
+print(story)
