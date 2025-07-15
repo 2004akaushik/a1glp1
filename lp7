@@ -1,0 +1,28 @@
+# 7. Load a pre-trained model (e.g., GPT-3/4 or T 5) using a popular NLP framework (like Hugging Face's Transformers library). Use the model to
+# generate text given simple prompts (specifically to Summarize a paragraph of text). Evaluate the performance of different prompts using metrics
+# like BLEU for translation or accuracy for classification.
+
+# !pip install evaluate
+
+from transformers import pipeline
+import evaluate
+
+# Load summarization pipeline using T5
+summarizer = pipeline("summarization", model="t5-small", tokenizer="t5-small")
+
+# Ask user for input paragraph and reference summary
+paragraph = input("Enter the paragraph you want to summarize:\n")
+reference_summary = input("\nEnter the expected (reference) summary:\n")
+
+# Generate summary
+summary = summarizer(paragraph, max_length=50, min_length=25, do_sample=False)[0]['summary_text']
+
+# Display results
+print("\nGenerated Summary:\n", summary)
+print("\nReference Summary:\n", reference_summary)
+
+# Evaluate using BLEU
+bleu = evaluate.load("bleu")
+results = bleu.compute(predictions=[summary], references=[[reference_summary]])
+
+print("\nBLEU Score:", round(results['bleu'] * 100, 2))
